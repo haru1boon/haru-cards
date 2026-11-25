@@ -1,0 +1,41 @@
+name: 인스타 예약 게시
+
+on:
+  schedule:
+    - cron: '3-59/10 * * * *'   # 10분마다 (GitHub 사정으로 몇 분~수십 분 늦을 수 있음)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ig-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 토큰·계정 확인
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python -I -X utf8 .ig/ig_post.py check
+      - name: 시간 된 게시물 올리기
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python -I -X utf8 .ig/ig_post.py run
+      - name: 큐 상태 저장
+        if: always()
+        run: |
+          if ! git diff --quiet -- .ig/ig_queue.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+            git add .ig/ig_queue.json
+            git commit -m "큐 상태 갱신"
+            for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
+          fi

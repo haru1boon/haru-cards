@@ -1,0 +1,5 @@
+ig_token.txt
+.ig/ig_token.txt
+.ig/ig_post.log
+.ig/ig_state.json
+*.tmp

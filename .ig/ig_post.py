@@ -39,9 +39,10 @@ def log(msg):
 def token():
     if os.environ.get('IG_TOKEN', '').strip():   # 클라우드: GitHub 저장소 Secret
         return os.environ['IG_TOKEN'].strip()
-    if not os.path.exists(TOKEN_FILE):
+    tf = os.environ.get('IG_TOKEN_FILE') or TOKEN_FILE   # 노트북 안전장치: buja_tools/ig_token.txt
+    if not os.path.exists(tf):
         sys.exit('[토큰 없음] ig_token.txt 에 토큰을 붙여넣어 주세요')
-    t = open(TOKEN_FILE, encoding='utf-8').read().strip()
+    t = open(tf, encoding='utf-8').read().strip()
     if not t:
         sys.exit('[토큰 비어 있음] ig_token.txt 확인')
     return t
@@ -132,6 +133,9 @@ def run():
             continue
         when = dt.datetime.fromisoformat(item['publish_at'])
         if when > now:
+            continue
+        late_min = int(os.environ.get('LATE_ONLY_MIN', '0') or 0)   # 노트북 안전장치: 클라우드가 놓친(늦은) 것만
+        if late_min and (now - when).total_seconds() < late_min * 60:
             continue
         if (now - when).total_seconds() > 6 * 3600:   # 6시간 넘게 지난 건 자동으로 올리지 않음 (PC 꺼져 있던 경우)
             item['status'] = 'missed'

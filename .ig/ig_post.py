@@ -1,4 +1,4 @@
-"""인스타 공식 API(Instagram Login)로 캐러셀 게시 + 예약 큐 실행
+﻿"""인스타 공식 API(Instagram Login)로 캐러셀 게시 + 예약 큐 실행
 
 토큰: 같은 폴더의 ig_token.txt (사용자가 직접 붙여넣음, 다른 곳에 복사하지 말 것)
 큐:   같은 폴더의 ig_queue.json
@@ -144,7 +144,7 @@ def run():
         try:
             pid, link = publish_carousel(item['media'], item['caption'])
             item.update(status='published', post_id=pid, permalink=link,
-                        published_at=dt.datetime.now().isoformat(timespec='seconds'))
+                        published_at=dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).isoformat(timespec='seconds'))
             log(f"[게시] {item['id']} {link}")
         except Exception as e:
             item['status'] = 'error'
